@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام تك سمارت برو - CRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['var(--app-font)', 'Cairo', 'Inter', 'sans-serif'],
+            serif: ['Times New Roman', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Amiri:wght@400;700&family=Cairo:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;700&family=Inter:wght@400;500;600;700&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --app-font: 'Cairo';
+    }
+    
+    body {
+      font-family: var(--app-font), 'Cairo', 'Inter', sans-serif;
+    }
+    
+    /* Disable Animations when preferred */
+    body.no-animations * {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    /* Compact Mode Styles */
+    body.compact-mode {
+        font-size: 0.9rem;
+    }
+    body.compact-mode .p-6 {
+        padding: 1rem;
+    }
+    body.compact-mode .p-4 {
+        padding: 0.75rem;
+    }
+    body.compact-mode .py-3 {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    body.compact-mode .gap-6 {
+        gap: 1rem;
+    }
+    body.compact-mode .text-3xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+    body.compact-mode .text-2xl {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+    }
+    body.compact-mode .h-16 { height: 3.5rem; }
+    body.compact-mode .w-16 { width: 3.5rem; }
+    
+    /* Smooth theme transition */
+    body, div, button, span, input, select, textarea {
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 200ms;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    
+    /* Scrollbar Styling */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent; 
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+    }
+    
+    /* Dark mode scrollbar */
+    .dark ::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
+    .dark ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+
+    /* 3D Card Effect */
+    .card-3d {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border-bottom: 4px solid #e2e8f0;
+    }
+    .dark .card-3d {
+      border-bottom-color: #334155;
+      background-color: #1e293b;
+    }
+    .card-3d:active {
+      transform: translateY(2px);
+      border-bottom-width: 0px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+    
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .animate-fade-in-right {
+      animation: fadeInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes fadeOutRight {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(50px); }
+    }
+    .animate-fade-out-right {
+      animation: fadeOutRight 0.3s ease-in forwards;
+    }
+
+    @media print {
+        .no-print, .sidebar-container, .mobile-header, .toast-container {
+            display: none !important;
+        }
+        body, .main-container {
+            background: white !important;
+            color: black !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+        .printable-content {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        /* Force light mode for print */
+        .dark {
+            color-scheme: light;
+        }
+        .dark body {
+            background-color: white;
+            color: black;
+        }
+        .dark .bg-slate-800, .dark .bg-slate-900 {
+            background-color: white !important;
+            color: black !important;
+            border: 1px solid #ddd;
+        }
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.3"
+  }
+}
+</script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen overflow-hidden selection:bg-blue-200 dark:selection:bg-blue-700">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
