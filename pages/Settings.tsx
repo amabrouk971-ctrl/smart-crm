@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { AppSettings, User, Role, AppTheme, AppLanguage, UserType, PermissionsState, ApiKey, Webhook, WebhookEvent, Organization, AppFont, AppFeatures } from '../types';
-import { THEMES, translateRole, TRANSLATIONS } from '../data';
+import { AppSettings, User, Role, AppTheme, AppLanguage, PermissionsState, ApiKey, Webhook, WebhookEvent, Organization, AppFont, AppFeatures } from '../types';
+import { THEMES, TRANSLATIONS } from '../data';
 import { GoogleGenAI } from "@google/genai";
 
 interface SettingsProps {
@@ -51,10 +51,10 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   organization_id TEXT REFERENCES organizations(id),
   username TEXT,
-  password TEXT, -- NOTE: Store hashed passwords in production!
+  password TEXT, 
   name TEXT NOT NULL,
-  role TEXT NOT NULL, -- Admin, Manager, Technician, Reception, Student
-  type TEXT NOT NULL, -- staff, student
+  role TEXT NOT NULL,
+  type TEXT NOT NULL,
   avatar TEXT,
   points INTEGER DEFAULT 0,
   level INTEGER DEFAULT 1,
@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   title TEXT NOT NULL,
   description TEXT,
   assignee_id TEXT REFERENCES users(id),
-  priority TEXT, -- Urgent, High, Medium, Low
-  status TEXT, -- To Do, In Progress, Review, Done
+  priority TEXT,
+  status TEXT,
   deadline TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   last_updated TIMESTAMPTZ,
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS inventory (
   category TEXT,
   quantity INTEGER DEFAULT 0,
   location TEXT,
-  status TEXT, -- Available, Low Stock, Out of Stock
+  status TEXT,
   cost_price NUMERIC DEFAULT 0,
   selling_price NUMERIC DEFAULT 0,
   tax_rate NUMERIC DEFAULT 0,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS inventory (
 CREATE TABLE IF NOT EXISTS maintenance_tickets (
   id TEXT PRIMARY KEY,
   organization_id TEXT REFERENCES organizations(id),
-  device_id TEXT, -- Link to inventory ID
+  device_id TEXT,
   device_name TEXT,
   issue TEXT,
   priority TEXT,
@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS maintenance_tickets (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Customers (CRM)
+-- 6. Customers
 CREATE TABLE IF NOT EXISTS customers (
   id TEXT PRIMARY KEY,
   organization_id TEXT REFERENCES organizations(id),
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS customers (
   phone TEXT,
   email TEXT,
   notes TEXT,
-  status TEXT, -- Active, VIP, Archived
+  status TEXT,
   joined_date DATE,
   history JSONB DEFAULT '[]'::jsonb
 );
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS finance_records (
   organization_id TEXT REFERENCES organizations(id),
   date DATE,
   amount NUMERIC NOT NULL,
-  type TEXT NOT NULL, -- Income, Expense, Refund
+  type TEXT NOT NULL,
   category TEXT,
   description TEXT,
   customer_id TEXT REFERENCES customers(id),
@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS lab_computers (
   organization_id TEXT REFERENCES organizations(id),
   room_id TEXT,
   desk_number TEXT,
-  status TEXT, -- Available, In Use, Maintenance
+  status TEXT,
   specs TEXT,
   current_user_id TEXT,
   customer_id TEXT REFERENCES customers(id),
@@ -172,25 +172,25 @@ CREATE TABLE IF NOT EXISTS attendance (
   check_in TIMESTAMPTZ,
   check_out TIMESTAMPTZ,
   location_check_in TEXT,
-  status TEXT -- Present, Late, Absent
+  status TEXT
 );
 
--- 10. Leaves (HR)
+-- 10. Leaves
 CREATE TABLE IF NOT EXISTS leaves (
   id TEXT PRIMARY KEY,
   organization_id TEXT REFERENCES organizations(id),
   user_id TEXT REFERENCES users(id),
-  type TEXT, -- Vacation, Sick Leave, etc.
+  type TEXT,
   start_date DATE,
   end_date DATE,
   reason TEXT,
   attachment TEXT,
-  status TEXT, -- Pending, Approved, Rejected
+  status TEXT,
   admin_comment TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 11. Courses (LMS)
+-- 11. Courses
 CREATE TABLE IF NOT EXISTS courses (
   id TEXT PRIMARY KEY,
   organization_id TEXT REFERENCES organizations(id),
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS courses (
   status TEXT,
   category TEXT,
   start_date DATE,
-  recurrence TEXT, -- Weekly, Monthly
+  recurrence TEXT,
   max_capacity INTEGER,
   instructor TEXT
 );
@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS pos_sessions (
   start_cash NUMERIC,
   end_cash NUMERIC,
   expected_cash NUMERIC,
-  status TEXT, -- Open, Closed
+  status TEXT,
   summary JSONB
 );
 
@@ -256,7 +256,7 @@ CREATE TABLE IF NOT EXISTS pos_orders (
   tendered NUMERIC,
   change NUMERIC,
   payment_method TEXT,
-  status TEXT, -- Completed, Refunded, Held
+  status TEXT,
   receipt_number TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   guest_count INTEGER,
@@ -280,7 +280,7 @@ CREATE TABLE IF NOT EXISTS pos_taxes (
   is_default BOOLEAN
 );
 
--- 18. Glitches (Complaints)
+-- 18. Glitches
 CREATE TABLE IF NOT EXISTS glitches (
   id TEXT PRIMARY KEY,
   organization_id TEXT REFERENCES organizations(id),
@@ -300,7 +300,7 @@ CREATE TABLE IF NOT EXISTS glitches (
   admin_notes TEXT
 );
 
--- 19. Campaigns (Marketing)
+-- 19. Campaigns
 CREATE TABLE IF NOT EXISTS campaigns (
   id TEXT PRIMARY KEY,
   organization_id TEXT REFERENCES organizations(id),
@@ -389,23 +389,16 @@ export const SettingsView = ({
     const [locLoading, setLocLoading] = useState(false);
     const [showSchema, setShowSchema] = useState(false);
     
-    // Add User State
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [newUser, setNewUser] = useState<Partial<User>>({ role: 'Technician', type: 'staff', level: 1, points: 0, smartCoins: 0, karma: 0 });
     
-    // Org Edit State
-    const [orgName, setOrgName] = useState(currentOrganization?.name || '');
-    
-    // API State
     const [newKeyName, setNewKeyName] = useState('');
     const [newWebhook, setNewWebhook] = useState<Partial<Webhook>>({ name: '', url: '', event: 'task.created' });
     
-    // Reset Password & Points State
     const [userToEdit, setUserToEdit] = useState<User | null>(null);
     const [newPassword, setNewPassword] = useState('');
     const [pointsAdj, setPointsAdj] = useState(0);
 
-    // Maps Search State
     const [mapSearchQuery, setMapSearchQuery] = useState('');
     const [isMapSearching, setIsMapSearching] = useState(false);
     const [mapResultText, setMapResultText] = useState('');
@@ -569,11 +562,9 @@ export const SettingsView = ({
             const text = response.text || '';
             setMapResultText(text);
             
-            // Extract chunks for display
             const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
             setMapGroundingChunks(chunks);
 
-            // Regex to find coords
             const match = text.match(/LAT:\s*(-?\d+(\.\d+)?).*?LNG:\s*(-?\d+(\.\d+)?)/i);
             if (match) {
                 setFoundCoords({

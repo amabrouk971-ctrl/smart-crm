@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Task, InventoryItem, MaintenanceTicket, Customer, LabComputer, FinanceRecord, PurchaseOrder, AppLanguage } from '../types';
+import { User, Task, InventoryItem, MaintenanceTicket, Customer, LabComputer, FinanceRecord, PurchaseOrder, AppLanguage, Glitch, AttendanceRecord, LeaveRequest, POSOrder } from '../types';
 import { TRANSLATIONS } from '../data';
 import { RelationalTables } from './RelationalTables';
 
@@ -14,9 +14,13 @@ interface ERPProps {
     finance: FinanceRecord[];
     purchaseOrders: PurchaseOrder[];
     lang: AppLanguage;
+    glitches: Glitch[];
+    attendance: AttendanceRecord[];
+    leaves: LeaveRequest[];
+    posOrders: POSOrder[];
 }
 
-export const ERPModuleView = ({ users, tasks, inventory, tickets, customers, labComputers, finance, purchaseOrders, lang }: ERPProps) => {
+export const ERPModuleView = ({ users, tasks, inventory, tickets, customers, labComputers, finance, purchaseOrders, lang, glitches, attendance, leaves, posOrders }: ERPProps) => {
     const [activeTab, setActiveTab] = useState<'dashboard' | 'resources' | 'procurement' | 'databrowser'>('dashboard');
     const t = TRANSLATIONS[lang];
 
@@ -206,7 +210,12 @@ export const ERPModuleView = ({ users, tasks, inventory, tickets, customers, lab
                         tickets={tickets} 
                         customers={customers} 
                         labComputers={labComputers} 
-                        lang={lang} 
+                        lang={lang}
+                        finance={finance}
+                        posOrders={posOrders}
+                        attendance={attendance}
+                        leaves={leaves}
+                        glitches={glitches}
                     />
                 </div>
             )}
